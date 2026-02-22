@@ -646,12 +646,29 @@
     <string name="widget_clock_font_sans_serif_black">Sans Serif Black</string>
     <string name="widget_clock_font_analog">Analog</string>
     <string name="widget_live_wallpaper_weather_kind">Weather</string>
-    <!-- Time as in “daytime” / “nighttime” -->
+    <!-- Time as in "daytime" / "nighttime" -->
     <string name="widget_live_wallpaper_day_night_type">Time</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">DANGEROUS</string>
     <string name="widget_live_wallpaper_animations_enable_warning1">Wallpaper animations are known to cause, among other things: high battery consumption; battery overheating; high memory consumption; degraded system responsiveness; Android system crash.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">If you decide to enable them, you assume full responsibility for any problem that may arise, and no support will be provided.</string>
-    <!-- Settings (new design) -->
+    <!-- Live Wallpaper Performance Settings -->
+    <string name="widget_live_wallpaper_draw_interval_title">Draw interval</string>
+    <string name="widget_live_wallpaper_draw_interval_summary">Lower intervals reduce CPU/GPU usage</string>
+    <string name="widget_live_wallpaper_draw_interval_15_fps">15 fps</string>
+    <string name="widget_live_wallpaper_draw_interval_30_fps">30 fps</string>
+    <string name="widget_live_wallpaper_draw_interval_60_fps">60 fps</string>
+    <string name="widget_live_wallpaper_draw_interval_1000_ms">1000 ms (lowest)</string>
+    <string name="widget_live_wallpaper_sensors_title">Sensors</string>
+    <string name="widget_live_wallpaper_sensors_summary_off">Gravity sensor disabled</string>
+    <string name="widget_live_wallpaper_sensors_summary_on">Gravity sensor enabled</string>
+    <string name="widget_live_wallpaper_resolution_title">Canvas resolution</string>
+    <string name="widget_live_wallpaper_resolution_summary">Lower resolution reduces GPU usage</string>
+    <string name="widget_live_wallpaper_resolution_original">Original (100%)</string>
+    <string name="widget_live_wallpaper_resolution_75_percent">75%</string>
+    <string name="widget_live_wallpaper_resolution_50_percent">50%</string>
+    <string name="widget_live_wallpaper_animation_effects_title">Animation effects</string>
+    <string name="widget_live_wallpaper_animation_effects_summary_on">Clouds, stars, thunder enabled</string>
+    <string name="widget_live_wallpaper_animation_effects_summary_off">Minimal animation only</string>
     <string name="settings_section_general">General</string>
     <string name="settings_background_updates">Background updates</string>
     <string name="settings_background_updates_summary">Refresh rate, troubleshoot</string>

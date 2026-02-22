@@ -236,6 +236,32 @@
         <item>night</item>
     </string-array>
 
+    <!-- live wallpaper draw interval. -->
+    <string-array name="live_wallpaper_draw_intervals">
+        <item>@string/widget_live_wallpaper_draw_interval_15_fps</item>
+        <item>@string/widget_live_wallpaper_draw_interval_30_fps</item>
+        <item>@string/widget_live_wallpaper_draw_interval_60_fps</item>
+        <item>@string/widget_live_wallpaper_draw_interval_1000_ms</item>
+    </string-array>
+    <string-array name="live_wallpaper_draw_interval_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>1000</item>
+    </string-array>
+
+    <!-- live wallpaper resolution. -->
+    <string-array name="live_wallpaper_resolutions">
+        <item>@string/widget_live_wallpaper_resolution_original</item>
+        <item>@string/widget_live_wallpaper_resolution_75_percent</item>
+        <item>@string/widget_live_wallpaper_resolution_50_percent</item>
+    </string-array>
+    <string-array name="live_wallpaper_resolution_values">
+        <item>1.0</item>
+        <item>0.75</item>
+        <item>0.5</item>
+    </string-array>
+
     <!-- Accu Weather preferences -->
     <string-array name="accu_preference_portal">
         <item>@string/weather_source_accu_preference_portal_developer</item>

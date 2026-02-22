@@ -246,12 +246,14 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun setWeatherImplementor() {
             hasDrawn = false
+            val configManager = LiveWallpaperConfigManager(applicationContext)
             mImplementor = WeatherImplementorFactory.getWeatherImplementor(
                 applicationContext,
                 mWeatherKind,
                 mDaytime,
                 mAdaptiveSize,
-                mAnimate
+                mAnimate,
+                configManager.animationEffectsEnabled
             )
             mRotators = arrayOf(
                 DelayRotateController(mRotation2D.toDouble()),
@@ -288,6 +290,41 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mOpenGravitySensor = openGravitySensor
         }
 
+        private fun setDrawInterval() {
+            val configManager = LiveWallpaperConfigManager(applicationContext)
+            val drawInterval = configManager.drawInterval
+            
+            // Handle different ways to specify interval: either fps (15, 30, 60) or ms (1000)
+            val intervalMs = if (drawInterval <= 60) {
+                // Interpret as fps
+                (1000.0 / drawInterval.coerceIn(1, 60)).toLong()
+            } else {
+                // Interpret as ms
+                drawInterval.toLong()
+            }
+            
+            if (mAnimate && mVisible) {
+                mIntervalController?.cancel()
+                mIntervalController = AsyncHelper.intervalRunOnUI(
+                    { mHandler?.post(mDrawableRunnable) },
+                    intervalMs,
+                    0
+                )
+            }
+        }
+
+        private fun setAdaptiveSize() {
+            val configManager = LiveWallpaperConfigManager(applicationContext)
+            val resolution = configManager.resolution
+            
+            // Scale adaptive size based on resolution setting
+            mAdaptiveSize[0] = (mSizes[0] * resolution).toInt()
+            mAdaptiveSize[1] = (mSizes[1] * resolution).toInt()
+            
+            // Update bounds for background
+            mBackground?.setBounds(0, 0, mAdaptiveSize[0], mAdaptiveSize[1])
+        }
+
         override fun onCreate(surfaceHolder: SurfaceHolder) {
             mDeviceOrientation = DeviceOrientation.TOP
             mHandlerThread = HandlerThread(
@@ -312,10 +349,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         if (holder.surface.isValid) {
                             mSizes[0] = width
                             mSizes[1] = height
-                            mAdaptiveSize[0] = mSizes[0]
-                            mAdaptiveSize[1] = mSizes[1]
-                            mBackground?.setBounds(0, 0, mSizes[0], mSizes[1])
                             mAnimate = LiveWallpaperConfigManager(this@MaterialLiveWallpaperService).animationsEnabled
+                            setAdaptiveSize()
+                            mBackground?.setBounds(0, 0, mAdaptiveSize[0], mAdaptiveSize[1])
                             setWeatherImplementor()
                         }
                     }
@@ -356,6 +392,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mOrientationListener.enable()
             }
 
+            setAdaptiveSize()
+            setDrawInterval()
+
             val location: Location? = if (configManager.weatherKind == "auto" || configManager.dayNightType == "auto") {
                 // TODO: Isn't there a more efficient way than reloading the location from database
                 // everytime the visibility changes??
@@ -394,7 +433,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
             setWeatherImplementor()
             setIntervalComputer()
-            setOpenGravitySensor(settingsManager.isGravitySensorEnabled)
+            setOpenGravitySensor(configManager.sensorsEnabled)
             if (mOpenGravitySensor) {
                 sensorManager?.registerListener(
                     mGravityListener,
@@ -407,15 +446,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
             setWeatherBackgroundDrawable()
             if (mAnimate) {
-                val screenRefreshRate = ContextCompat.getDisplayOrDefault(this@MaterialLiveWallpaperService)
-                    .refreshRate.let {
-                        if (it > 60f) 60f else it
-                    }
-                mIntervalController = AsyncHelper.intervalRunOnUI(
-                    { mHandler?.post(mDrawableRunnable) },
-                    (1000.0 / screenRefreshRate).toLong(),
-                    0
-                )
+                setDrawInterval()
             } else {
                 mHandler?.post(mDrawableRunnable)
                 // Run again 1 sec later in case the canvas size was not correctly set the first time on preview screen

@@ -37,6 +37,7 @@ class CloudImplementor(
     @TypeRule type: Int,
     daylight: Boolean,
     darkMode: Boolean = !daylight,
+    enableEffects: Boolean = true,
 ) : WeatherAnimationImplementor() {
     private val mAnimate = animate
     private var mPaint = Paint().apply {
@@ -485,7 +486,7 @@ class CloudImplementor(
             )
             if (daylight) {
                 initialize(clouds)
-            } else {
+            } else if (enableEffects) {
                 val colors = intArrayOf(
                     Color.rgb(210, 247, 255),
                     Color.rgb(208, 233, 255),
@@ -519,7 +520,8 @@ class CloudImplementor(
                 initialize(clouds, stars)
             }
         }
-        mThunder = if (type == TYPE_THUNDER) Thunder() else null
+        // Only create thunder when enableEffects is true and type is THUNDER
+        mThunder = if (enableEffects && type == TYPE_THUNDER) Thunder() else null
     }
 
     private fun initialize(clouds: Array<Cloud>, stars: Array<Star> = emptyArray()) {

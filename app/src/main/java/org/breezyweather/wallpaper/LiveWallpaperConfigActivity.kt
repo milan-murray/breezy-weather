@@ -85,6 +85,17 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
     private lateinit var animationsEnabledValue: MutableState<Boolean>
 
+    private lateinit var drawIntervalValueNow: MutableState<Int>
+    private lateinit var drawIntervals: Array<String>
+    private lateinit var drawIntervalValues: Array<String>
+
+    private lateinit var resolutionValueNow: MutableState<Float>
+    private lateinit var resolutions: Array<String>
+    private lateinit var resolutionValues: Array<String>
+
+    private lateinit var sensorsEnabledValue: MutableState<Boolean>
+    private lateinit var animationEffectsEnabledValue: MutableState<Boolean>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -98,6 +109,17 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         dayNightTypeValues = resources.getStringArray(R.array.live_wallpaper_day_night_type_values)
 
         animationsEnabledValue = mutableStateOf(liveWallpaperConfigManager.animationsEnabled)
+
+        drawIntervalValueNow = mutableStateOf(liveWallpaperConfigManager.drawInterval)
+        drawIntervals = resources.getStringArray(R.array.live_wallpaper_draw_intervals)
+        drawIntervalValues = resources.getStringArray(R.array.live_wallpaper_draw_interval_values)
+
+        resolutionValueNow = mutableStateOf(liveWallpaperConfigManager.resolution)
+        resolutions = resources.getStringArray(R.array.live_wallpaper_resolutions)
+        resolutionValues = resources.getStringArray(R.array.live_wallpaper_resolution_values)
+
+        sensorsEnabledValue = mutableStateOf(liveWallpaperConfigManager.sensorsEnabled)
+        animationEffectsEnabledValue = mutableStateOf(liveWallpaperConfigManager.animationEffectsEnabled)
 
         setContent {
             BreezyWeatherTheme {
@@ -164,6 +186,60 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                     }
                 }
                 item {
+                    Spinner(
+                        currentVal = drawIntervalValueNow,
+                        names = drawIntervals,
+                        values = drawIntervalValues.map { it.toInt() }.toIntArray(),
+                        titleId = R.string.widget_live_wallpaper_draw_interval_title
+                    ) { value ->
+                        drawIntervalValueNow.value = value
+                    }
+                }
+                item {
+                    Spinner(
+                        currentVal = resolutionValueNow,
+                        names = resolutions,
+                        values = resolutionValues.map { it.toFloat() }.toFloatArray(),
+                        titleId = R.string.widget_live_wallpaper_resolution_title
+                    ) { value ->
+                        resolutionValueNow.value = value
+                    }
+                }
+                item {
+                    SwitchPreferenceView(
+                        title = context.getString(R.string.widget_live_wallpaper_sensors_title),
+                        summary = { _: Context, enabled: Boolean ->
+                            if (enabled) {
+                                context.getString(R.string.widget_live_wallpaper_sensors_summary_on)
+                            } else {
+                                context.getString(R.string.widget_live_wallpaper_sensors_summary_off)
+                            }
+                        },
+                        checked = sensorsEnabledValue.value,
+                        withState = false,
+                        card = false
+                    ) { newValue ->
+                        sensorsEnabledValue.value = newValue
+                    }
+                }
+                item {
+                    SwitchPreferenceView(
+                        title = context.getString(R.string.widget_live_wallpaper_animation_effects_title),
+                        summary = { _: Context, enabled: Boolean ->
+                            if (enabled) {
+                                context.getString(R.string.widget_live_wallpaper_animation_effects_summary_on)
+                            } else {
+                                context.getString(R.string.widget_live_wallpaper_animation_effects_summary_off)
+                            }
+                        },
+                        checked = animationEffectsEnabledValue.value,
+                        withState = false,
+                        card = false
+                    ) { newValue ->
+                        animationEffectsEnabledValue.value = newValue
+                    }
+                }
+                item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -176,7 +252,11 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                     this@LiveWallpaperConfigActivity,
                                     weatherKindValueNow.value,
                                     dayNightTypeValueNow.value,
-                                    animationsEnabledValue.value
+                                    animationsEnabledValue.value,
+                                    drawIntervalValueNow.value,
+                                    resolutionValueNow.value,
+                                    sensorsEnabledValue.value,
+                                    animationEffectsEnabledValue.value
                                 )
                                 finish()
                             },
@@ -263,6 +343,171 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                     textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     iconContentColor = MaterialTheme.colorScheme.onSurface
                 )
+            }
+        }
+    }
+
+    @Composable
+    private fun Spinner(
+        currentVal: MutableState<Int>,
+        names: Array<String>,
+        values: IntArray,
+        @StringRes titleId: Int,
+        onValueSelected: (Int) -> Unit,
+    ) {
+        val expanded = remember { mutableStateOf(false) }
+        val textFieldSize = remember { mutableStateOf(Size.Zero) }
+
+        val icon = if (expanded.value) {
+            Icons.Filled.ArrowDropUp
+        } else {
+            Icons.Filled.ArrowDropDown
+        }
+        val label = stringResource(titleId)
+
+        Column(
+            modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
+        ) {
+            OutlinedTextField(
+                value = names[if (values.indexOf(currentVal.value) != -1) values.indexOf(currentVal.value) else 0],
+                onValueChange = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coordinates ->
+                        textFieldSize.value = coordinates.size.toSize()
+                    }
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = themeRipple(),
+                        onClick = { expanded.value = !expanded.value }
+                    ),
+                label = {
+                    Text(
+                        text = label,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            expanded.value = !expanded.value
+                        },
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                },
+                readOnly = true,
+                enabled = false,
+                textStyle = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+            DropdownMenu(
+                expanded = expanded.value,
+                onDismissRequest = { expanded.value = false },
+                modifier = Modifier
+                    .width(with(LocalDensity.current) { textFieldSize.value.width.toDp() })
+            ) {
+                names.forEachIndexed { index, item ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = item,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        },
+                        onClick = {
+                            onValueSelected(values[index])
+                            expanded.value = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun Spinner(
+        currentVal: MutableState<Float>,
+        names: Array<String>,
+        values: FloatArray,
+        @StringRes titleId: Int,
+        onValueSelected: (Float) -> Unit,
+    ) {
+        val expanded = remember { mutableStateOf(false) }
+        val textFieldSize = remember { mutableStateOf(Size.Zero) }
+
+        val icon = if (expanded.value) {
+            Icons.Filled.ArrowDropUp
+        } else {
+            Icons.Filled.ArrowDropDown
+        }
+        val label = stringResource(titleId)
+
+        Column(
+            modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
+        ) {
+            val selectedIndex = values.indexOfFirst { it == currentVal.value }
+            OutlinedTextField(
+                value = names[if (selectedIndex != -1) selectedIndex else 0],
+                onValueChange = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coordinates ->
+                        textFieldSize.value = coordinates.size.toSize()
+                    }
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = themeRipple(),
+                        onClick = { expanded.value = !expanded.value }
+                    ),
+                label = {
+                    Text(
+                        text = label,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            expanded.value = !expanded.value
+                        },
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                },
+                readOnly = true,
+                enabled = false,
+                textStyle = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+            DropdownMenu(
+                expanded = expanded.value,
+                onDismissRequest = { expanded.value = false },
+                modifier = Modifier
+                    .width(with(LocalDensity.current) { textFieldSize.value.width.toDp() })
+            ) {
+                names.forEachIndexed { index, item ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = item,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        },
+                        onClick = {
+                            onValueSelected(values[index])
+                            expanded.value = false
+                        }
+                    )
+                }
             }
         }
     }
