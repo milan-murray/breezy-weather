@@ -40,15 +40,10 @@ object WeatherImplementorFactory {
         daytime: Boolean,
         @Size(2) sizes: IntArray,
         animate: Boolean,
-        animationEffects: Boolean = true,
     ): WeatherAnimationImplementor? {
         val darkMode = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
-        
-        // When animationEffects is false, we only show basic weather without extra effects
-        // (no stars, no thunder, simplified clouds)
-        val enableEffects = animate && animationEffects
-        
+
         return when (weatherKind) {
             WeatherView.WEATHER_KIND_CLEAR -> if (daytime) {
                 SunImplementor(
@@ -68,8 +63,7 @@ object WeatherImplementorFactory {
                     animate,
                     CloudImplementor.TYPE_CLOUD,
                     daytime,
-                    darkMode,
-                    enableEffects
+                    darkMode
                 )
 
             WeatherView.WEATHER_KIND_CLOUDY ->
@@ -78,8 +72,7 @@ object WeatherImplementorFactory {
                     animate,
                     CloudImplementor.TYPE_CLOUDY,
                     daytime,
-                    darkMode,
-                    enableEffects
+                    darkMode
                 )
 
             WeatherView.WEATHER_KIND_FOG ->
@@ -88,8 +81,7 @@ object WeatherImplementorFactory {
                     animate,
                     CloudImplementor.TYPE_FOG,
                     daytime,
-                    darkMode,
-                    enableEffects
+                    darkMode
                 )
 
             WeatherView.WEATHER_KIND_HAZE ->
@@ -98,8 +90,7 @@ object WeatherImplementorFactory {
                     animate,
                     CloudImplementor.TYPE_HAZE,
                     daytime,
-                    darkMode,
-                    enableEffects
+                    darkMode
                 )
 
             WeatherView.WEATHER_KIND_RAINY ->
@@ -146,8 +137,7 @@ object WeatherImplementorFactory {
                     animate,
                     CloudImplementor.TYPE_THUNDER,
                     daytime,
-                    darkMode,
-                    enableEffects
+                    darkMode
                 )
 
             WeatherView.WEATHER_KIND_WIND ->

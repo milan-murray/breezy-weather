@@ -94,7 +94,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private lateinit var resolutionValues: Array<String>
 
     private lateinit var sensorsEnabledValue: MutableState<Boolean>
-    private lateinit var animationEffectsEnabledValue: MutableState<Boolean>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,7 +118,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         resolutionValues = resources.getStringArray(R.array.live_wallpaper_resolution_values)
 
         sensorsEnabledValue = mutableStateOf(liveWallpaperConfigManager.sensorsEnabled)
-        animationEffectsEnabledValue = mutableStateOf(liveWallpaperConfigManager.animationEffectsEnabled)
 
         setContent {
             BreezyWeatherTheme {
@@ -223,23 +221,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                     }
                 }
                 item {
-                    SwitchPreferenceView(
-                        title = context.getString(R.string.widget_live_wallpaper_animation_effects_title),
-                        summary = { _: Context, enabled: Boolean ->
-                            if (enabled) {
-                                context.getString(R.string.widget_live_wallpaper_animation_effects_summary_on)
-                            } else {
-                                context.getString(R.string.widget_live_wallpaper_animation_effects_summary_off)
-                            }
-                        },
-                        checked = animationEffectsEnabledValue.value,
-                        withState = false,
-                        card = false
-                    ) { newValue ->
-                        animationEffectsEnabledValue.value = newValue
-                    }
-                }
-                item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -255,8 +236,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                     animationsEnabledValue.value,
                                     drawIntervalValueNow.value,
                                     resolutionValueNow.value,
-                                    sensorsEnabledValue.value,
-                                    animationEffectsEnabledValue.value
+                                    sensorsEnabledValue.value
                                 )
                                 finish()
                             },

@@ -26,7 +26,6 @@ class LiveWallpaperConfigManager(context: Context) {
     val drawInterval: Int
     val resolution: Float
     val sensorsEnabled: Boolean
-    val animationEffectsEnabled: Boolean
 
     init {
         val config = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
@@ -36,7 +35,6 @@ class LiveWallpaperConfigManager(context: Context) {
         drawInterval = config.getInt(KEY_DRAW_INTERVAL, 60)
         resolution = config.getFloat(KEY_RESOLUTION, 1.0f)
         sensorsEnabled = config.getBoolean(KEY_SENSORS_ENABLED, true)
-        animationEffectsEnabled = config.getBoolean(KEY_ANIMATION_EFFECTS_ENABLED, true)
     }
 
     companion object {
@@ -47,7 +45,6 @@ class LiveWallpaperConfigManager(context: Context) {
         private const val KEY_DRAW_INTERVAL = "draw_interval"
         private const val KEY_RESOLUTION = "resolution"
         private const val KEY_SENSORS_ENABLED = "sensors_enabled"
-        private const val KEY_ANIMATION_EFFECTS_ENABLED = "animation_effects_enabled"
 
         fun update(
             context: Context,
@@ -56,8 +53,7 @@ class LiveWallpaperConfigManager(context: Context) {
             animationsEnabled: Boolean,
             drawInterval: Int = 60,
             resolution: Float = 1.0f,
-            sensorsEnabled: Boolean = true,
-            animationEffectsEnabled: Boolean = true
+            sensorsEnabled: Boolean = true
         ) {
             ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
                 .edit()
@@ -67,7 +63,6 @@ class LiveWallpaperConfigManager(context: Context) {
                 .putInt(KEY_DRAW_INTERVAL, drawInterval)
                 .putFloat(KEY_RESOLUTION, resolution)
                 .putBoolean(KEY_SENSORS_ENABLED, sensorsEnabled)
-                .putBoolean(KEY_ANIMATION_EFFECTS_ENABLED, animationEffectsEnabled)
                 .apply()
         }
     }

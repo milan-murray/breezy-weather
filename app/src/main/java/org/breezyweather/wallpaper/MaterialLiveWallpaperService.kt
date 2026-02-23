@@ -253,7 +253,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mDaytime,
                 mAdaptiveSize,
                 mAnimate,
-                configManager.animationEffectsEnabled
+                true
             )
             mRotators = arrayOf(
                 DelayRotateController(mRotation2D.toDouble()),
