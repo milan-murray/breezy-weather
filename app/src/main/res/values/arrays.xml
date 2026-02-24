@@ -262,6 +262,24 @@
         <item>0.5</item>
     </string-array>
 
+    <!-- live wallpaper timed animation duration. -->
+    <string-array name="live_wallpaper_timed_animation_durations">
+        <item>3 @string/action_seconds_short</item>
+        <item>5 @string/action_seconds_short</item>
+        <item>10 @string/action_seconds_short</item>
+        <item>15 @string/action_seconds_short</item>
+        <item>20 @string/action_seconds_short</item>
+        <item>30 @string/action_seconds_short</item>
+    </string-array>
+    <string-array name="live_wallpaper_timed_animation_duration_values">
+        <item>3</item>
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>30</item>
+    </string-array>
+
     <!-- Accu Weather preferences -->
     <string-array name="accu_preference_portal">
         <item>@string/weather_source_accu_preference_portal_developer</item>

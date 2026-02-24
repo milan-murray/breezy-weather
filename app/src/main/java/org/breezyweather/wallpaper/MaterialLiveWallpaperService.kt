@@ -51,8 +51,17 @@ import org.breezyweather.ui.theme.weatherView.WeatherView
 import org.breezyweather.ui.theme.weatherView.WeatherView.WeatherKindRule
 import org.breezyweather.ui.theme.weatherView.WeatherViewController
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.DelayRotateController
+import org.breezyweather.ui.theme.weatherView.materialWeatherView.EasingController
+
+// ... existing code ...
+
+// Update easing function to use proper deceleration curve
+val easedInterval = EasingController.decelerate(currentInterval, 0.8f)
+
+// ... rest of the code remains unchanged
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.IntervalComputer
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.MaterialWeatherView
+import org.breezyweather.ui.theme.weatherView.materialWeatherView.TimedIntervalController
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.WeatherImplementorFactory
 import javax.inject.Inject
 import kotlin.math.abs
@@ -87,6 +96,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private var mHolder: SurfaceHolder? = null
         private var mIntervalComputer: IntervalComputer? = null
+        private var mTimedIntervalController: TimedIntervalController? = null
         private var mRotators: Array<MaterialWeatherView.RotateController>? = null
         private var mImplementor: MaterialWeatherView.WeatherAnimationImplementor? = null
         private var mBackground: Drawable? = null
@@ -120,10 +130,22 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 return@Runnable
             }
             // LogHelper.log(msg = "[LiveWallpaper] Runnable is running")
-            mIntervalComputer?.invalidate()
-            if (mRotators != null && mIntervalComputer != null) {
-                mRotators!![0].updateRotation(mRotation2D.toDouble(), mIntervalComputer!!.interval)
-                mRotators!![1].updateRotation(mRotation3D.toDouble(), mIntervalComputer!!.interval)
+            
+            // Only invalidate intervalComputer when animating
+            if (mAnimate) {
+                mIntervalComputer?.invalidate()
+                if (mRotators != null && mIntervalComputer != null) {
+                    mRotators!![0].updateRotation(mRotation2D.toDouble(), mIntervalComputer!!.interval)
+                    mRotators!![1].updateRotation(mRotation3D.toDouble(), mIntervalComputer!!.interval)
+                }
+            } else if (!hasDrawn) {
+                // First draw when not animating
+                mIntervalComputer?.invalidate()
+                if (mRotators != null && mIntervalComputer != null) {
+                    mRotators!![0].updateRotation(mRotation2D.toDouble(), mIntervalComputer!!.interval)
+                    mRotators!![1].updateRotation(mRotation3D.toDouble(), mIntervalComputer!!.interval)
+                }
+                hasDrawn = true
             }
 
             try {
@@ -252,13 +274,17 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mWeatherKind,
                 mDaytime,
                 mAdaptiveSize,
-                mAnimate,
-                true
+                mAnimate
             )
             mRotators = arrayOf(
                 DelayRotateController(mRotation2D.toDouble()),
                 DelayRotateController(mRotation3D.toDouble())
             )
+
+            // If timed animation is enabled and visible, start animation on weather change
+            if (configManager.timedAnimationEnabled && mVisible && mTimedIntervalController != null) {
+                mTimedIntervalController?.start()
+            }
         }
 
         private fun setWeatherBackgroundDrawable() {
@@ -293,7 +319,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private fun setDrawInterval() {
             val configManager = LiveWallpaperConfigManager(applicationContext)
             val drawInterval = configManager.drawInterval
-            
+            val timedAnimationEnabled = configManager.timedAnimationEnabled
+            val timedAnimationDuration = configManager.timedAnimationDuration
+
             // Handle different ways to specify interval: either fps (15, 30, 60) or ms (1000)
             val intervalMs = if (drawInterval <= 60) {
                 // Interpret as fps
@@ -302,8 +330,62 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 // Interpret as ms
                 drawInterval.toLong()
             }
-            
-            if (mAnimate && mVisible) {
+
+            // Initialize or update timed interval controller
+            if (timedAnimationEnabled && mTimedIntervalController == null) {
+                mTimedIntervalController = TimedIntervalController(
+                    totalDurationMs = (timedAnimationDuration * 1000L),
+                    baseIntervalMs = intervalMs
+                )
+            }
+
+            if (timedAnimationEnabled && mVisible) {
+                // Timed animation mode - use self-scheduling with variable intervals
+                val controller = mTimedIntervalController!!
+                controller.start()
+
+                // Cancel any existing interval controller
+                mIntervalController?.cancel()
+
+                // Self-scheduling loop that respects variable intervals from controller
+                // Track controllers so they can be cancelled when needed
+                var currentTimedController: AsyncHelper.Controller? = null
+                
+                fun scheduleNextFrame() {
+                    if (!controller.isActive()) return
+
+                    val currentInterval = controller.getInterval()
+                    if (currentInterval > 0) {
+                        if (mImplementor != null) {
+                            mHandler?.post(mDrawableRunnable)
+                        }
+                        // Apply easing function to interval
+                        val easedInterval = EasingController.decelerate(currentInterval, 0.8f)
+                        // Add minimum interval to prevent choppiness
+                        val minInterval = 16L // 60 FPS cap
+                        currentTimedController = AsyncHelper.delayRunOnUI(
+                            { scheduleNextFrame() },
+                            max(easedInterval.toLong(), minInterval)
+                        )
+                    } else {
+                        // Ensure final frame is drawn before stopping
+                        mHandler?.post(mDrawableRunnable)
+                        // Animation complete - stop
+                        mAnimate = false
+                        controller.reset()
+                        currentTimedController?.cancel()
+                        currentTimedController = null
+                    }
+                }
+                
+                // Start the loop
+                currentTimedController = AsyncHelper.delayRunOnUI(
+                    { scheduleNextFrame() },
+                    16 // Initial delay
+                )
+                mIntervalController = currentTimedController
+            } else if (mAnimate && mVisible) {
+                // Standard animation mode
                 mIntervalController?.cancel()
                 mIntervalController = AsyncHelper.intervalRunOnUI(
                     { mHandler?.post(mDrawableRunnable) },
@@ -390,6 +472,16 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mRotation3D = 0f
             if (mOrientationListener.canDetectOrientation()) {
                 mOrientationListener.enable()
+            }
+
+            // Reset timed animation controller on visibility change
+            val timedAnimationEnabled = configManager.timedAnimationEnabled
+            if (timedAnimationEnabled) {
+                mTimedIntervalController?.cancel()
+                mTimedIntervalController = TimedIntervalController(
+                    totalDurationMs = (configManager.timedAnimationDuration * 1000L),
+                    baseIntervalMs = configManager.drawInterval.toLong()
+                )
             }
 
             setAdaptiveSize()

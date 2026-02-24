@@ -26,6 +26,8 @@ class LiveWallpaperConfigManager(context: Context) {
     val drawInterval: Int
     val resolution: Float
     val sensorsEnabled: Boolean
+    val timedAnimationEnabled: Boolean
+    val timedAnimationDuration: Int
 
     init {
         val config = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
@@ -35,6 +37,8 @@ class LiveWallpaperConfigManager(context: Context) {
         drawInterval = config.getInt(KEY_DRAW_INTERVAL, 60)
         resolution = config.getFloat(KEY_RESOLUTION, 1.0f)
         sensorsEnabled = config.getBoolean(KEY_SENSORS_ENABLED, true)
+        timedAnimationEnabled = config.getBoolean(KEY_TIMED_ANIMATION_ENABLED, false)
+        timedAnimationDuration = config.getInt(KEY_TIMED_ANIMATION_DURATION, 5)
     }
 
     companion object {
@@ -45,6 +49,8 @@ class LiveWallpaperConfigManager(context: Context) {
         private const val KEY_DRAW_INTERVAL = "draw_interval"
         private const val KEY_RESOLUTION = "resolution"
         private const val KEY_SENSORS_ENABLED = "sensors_enabled"
+        private const val KEY_TIMED_ANIMATION_ENABLED = "timed_animation_enabled"
+        private const val KEY_TIMED_ANIMATION_DURATION = "timed_animation_duration"
 
         fun update(
             context: Context,
@@ -53,7 +59,9 @@ class LiveWallpaperConfigManager(context: Context) {
             animationsEnabled: Boolean,
             drawInterval: Int = 60,
             resolution: Float = 1.0f,
-            sensorsEnabled: Boolean = true
+            sensorsEnabled: Boolean = true,
+            timedAnimationEnabled: Boolean = false,
+            timedAnimationDuration: Int = 5
         ) {
             ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
                 .edit()
@@ -63,6 +71,8 @@ class LiveWallpaperConfigManager(context: Context) {
                 .putInt(KEY_DRAW_INTERVAL, drawInterval)
                 .putFloat(KEY_RESOLUTION, resolution)
                 .putBoolean(KEY_SENSORS_ENABLED, sensorsEnabled)
+                .putBoolean(KEY_TIMED_ANIMATION_ENABLED, timedAnimationEnabled)
+                .putInt(KEY_TIMED_ANIMATION_DURATION, timedAnimationDuration)
                 .apply()
         }
     }

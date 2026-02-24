@@ -669,6 +669,12 @@
     <string name="widget_live_wallpaper_animation_effects_title">Animation effects</string>
     <string name="widget_live_wallpaper_animation_effects_summary_on">Clouds, stars, thunder enabled</string>
     <string name="widget_live_wallpaper_animation_effects_summary_off">Minimal animation only</string>
+    <string name="widget_live_wallpaper_timed_animation_title">Timed animation mode</string>
+    <string name="widget_live_wallpaper_timed_animation_summary_on">Animation plays for configured duration, then stops</string>
+    <string name="widget_live_wallpaper_timed_animation_summary_off">Animations run continuously</string>
+    <string name="widget_live_wallpaper_timed_animation_duration_title">Animation duration</string>
+    <string name="widget_live_wallpaper_timed_animation_duration_summary">Time before animation slows to stop</string>
+    <!-- Live Wallpaper Performance Settings -->
     <string name="settings_section_general">General</string>
     <string name="settings_background_updates">Background updates</string>
     <string name="settings_background_updates_summary">Refresh rate, troubleshoot</string>

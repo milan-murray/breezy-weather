@@ -95,6 +95,11 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
     private lateinit var sensorsEnabledValue: MutableState<Boolean>
 
+    private lateinit var timedAnimationEnabledValue: MutableState<Boolean>
+    private lateinit var timedAnimationDurationValue: MutableState<Int>
+    private lateinit var timedAnimationDurations: Array<String>
+    private lateinit var timedAnimationDurationValues: Array<String>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -118,6 +123,11 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         resolutionValues = resources.getStringArray(R.array.live_wallpaper_resolution_values)
 
         sensorsEnabledValue = mutableStateOf(liveWallpaperConfigManager.sensorsEnabled)
+
+        timedAnimationEnabledValue = mutableStateOf(liveWallpaperConfigManager.timedAnimationEnabled)
+        timedAnimationDurationValue = mutableStateOf(liveWallpaperConfigManager.timedAnimationDuration)
+        timedAnimationDurations = resources.getStringArray(R.array.live_wallpaper_timed_animation_durations)
+        timedAnimationDurationValues = resources.getStringArray(R.array.live_wallpaper_timed_animation_duration_values)
 
         setContent {
             BreezyWeatherTheme {
@@ -205,6 +215,35 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 }
                 item {
                     SwitchPreferenceView(
+                        title = context.getString(R.string.widget_live_wallpaper_timed_animation_title),
+                        summary = { _: Context, enabled: Boolean ->
+                            if (enabled) {
+                                context.getString(R.string.widget_live_wallpaper_timed_animation_summary_on)
+                            } else {
+                                context.getString(R.string.widget_live_wallpaper_timed_animation_summary_off)
+                            }
+                        },
+                        checked = timedAnimationEnabledValue.value,
+                        withState = false,
+                        card = false
+                    ) { newValue ->
+                        timedAnimationEnabledValue.value = newValue
+                    }
+                }
+                if (timedAnimationEnabledValue.value) {
+                    item {
+                        Spinner(
+                            currentVal = timedAnimationDurationValue,
+                            names = timedAnimationDurations,
+                            values = timedAnimationDurationValues.map { it.toInt() }.toIntArray(),
+                            titleId = R.string.widget_live_wallpaper_timed_animation_duration_title
+                        ) { value ->
+                            timedAnimationDurationValue.value = value
+                        }
+                    }
+                }
+                item {
+                    SwitchPreferenceView(
                         title = context.getString(R.string.widget_live_wallpaper_sensors_title),
                         summary = { _: Context, enabled: Boolean ->
                             if (enabled) {
@@ -236,7 +275,9 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                     animationsEnabledValue.value,
                                     drawIntervalValueNow.value,
                                     resolutionValueNow.value,
-                                    sensorsEnabledValue.value
+                                    sensorsEnabledValue.value,
+                                    timedAnimationEnabledValue.value,
+                                    timedAnimationDurationValue.value
                                 )
                                 finish()
                             },

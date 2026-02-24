@@ -57,6 +57,21 @@ class MaterialPainterView(
 
     private var gravitySensor: Sensor? = null
 
+    var stopAnimation = false
+        set(value) {
+            field = value
+            if (value) {
+                // Stop the animation loop
+                context.sensorManager?.unregisterListener(mGravityListener, gravitySensor)
+                orientationListener.disable()
+            } else {
+                // Restart if needed
+                if (drawable && intervalComputer != null) {
+                    setIntervalComputer()
+                }
+            }
+        }
+
     @Size(2)
     private var canvasSize = IntArray(2)
     private var rotation2D = 0f
@@ -243,6 +258,11 @@ class MaterialPainterView(
     // maybe use TextureView/SurfaceView or save to bitmap?
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+
+        // If stopAnimation is true, don't update or invalidate
+        if (stopAnimation) {
+            return
+        }
 
         if (intervalComputer == null || rotators == null || impl == null) {
             return
