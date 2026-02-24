@@ -52,13 +52,6 @@ import org.breezyweather.ui.theme.weatherView.WeatherView.WeatherKindRule
 import org.breezyweather.ui.theme.weatherView.WeatherViewController
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.DelayRotateController
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.EasingController
-
-// ... existing code ...
-
-// Update easing function to use proper deceleration curve
-val easedInterval = EasingController.decelerate(currentInterval, 0.8f)
-
-// ... rest of the code remains unchanged
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.IntervalComputer
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.MaterialWeatherView
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.TimedIntervalController
@@ -359,13 +352,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         if (mImplementor != null) {
                             mHandler?.post(mDrawableRunnable)
                         }
-                        // Apply easing function to interval
-                        val easedInterval = EasingController.decelerate(currentInterval, 0.8f)
+                        
                         // Add minimum interval to prevent choppiness
                         val minInterval = 16L // 60 FPS cap
                         currentTimedController = AsyncHelper.delayRunOnUI(
                             { scheduleNextFrame() },
-                            max(easedInterval.toLong(), minInterval)
+                            max(currentInterval.toLong(), minInterval)
                         )
                     } else {
                         // Ensure final frame is drawn before stopping
